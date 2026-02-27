@@ -10,40 +10,45 @@ app.set("trust proxy", true);
 app.use(express.static("public"));
 
 async function getLocation(ip) {
-  try {
-    const res = await axios.get(`http://ip-api.com/json/${ip}`);
 
-    return {
-      city: res.data.city || "Desconhecido",
-      country: res.data.country || "Desconhecido",
-      isp: res.data.isp || "Desconhecido",
-      lat: res.data.lat,
-      lon: res.data.lon
-    };
+  try {
+
+    const res = await axios.get(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,isp,lat,lon,query`);
+
+    if (res.data.status !== "success") return null;
+
+    return res.data;
 
   } catch {
-
-    return {
-      city: "Desconhecido",
-      country: "Desconhecido",
-      isp: "Desconhecido",
-      lat: null,
-      lon: null
-    };
-
+    return null;
   }
+
 }
 
 app.get("/log", async (req, res) => {
 
-  const ip = req.ip;
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    req.ip;
+
   const ua = req.headers["user-agent"] || "Desconhecido";
 
   const parser = new UAParser(ua);
 
-  const browser = parser.getBrowser().name || "Desconhecido";
-  const os = parser.getOS().name || "Desconhecido";
-  const device = parser.getDevice().type || "Desktop";
+  const browser = parser.getBrowser();
+  const os = parser.getOS();
+  const device = parser.getDevice();
+
+  const deviceType = device.type || "Desktop";
+
+  const browserName = browser.name || "Desconhecido";
+  const browserVersion = browser.version || "";
+
+  const osName = os.name || "Desconhecido";
+  const osVersion = os.version || "";
+
+  const hostname = req.hostname || "Desconhecido";
 
   const time = new Date().toLocaleString("pt-BR", {
     timeZone: "America/Sao_Paulo"
@@ -51,71 +56,107 @@ app.get("/log", async (req, res) => {
 
   const location = await getLocation(ip);
 
+  let city = "Desconhecido";
+  let region = "";
+  let country = "";
+  let isp = "Desconhecido";
   let mapsLink = "Indisponível";
+  let flag = "";
 
-  if (location.lat && location.lon) {
-    mapsLink = `https://www.google.com/maps?q=${location.lat},${location.lon}`;
+  if (location) {
+
+    city = location.city;
+    region = location.regionName;
+    country = location.country;
+    isp = location.isp;
+
+    if (location.lat && location.lon) {
+      mapsLink = `https://www.google.com/maps?q=${location.lat},${location.lon}`;
+    }
+
+    flag = `https://flagsapi.com/${countryCode(location.country)}/flat/64.png`;
+
   }
 
   try {
 
     await axios.post(process.env.DISCORD_WEBHOOK, {
 
-      username: "Access Logger",
+      username: "Advanced Logger",
 
       embeds: [
         {
           title: "📡 Nova visita detectada",
           color: 3447003,
 
+          thumbnail: {
+            url: flag
+          },
+
           fields: [
+
             {
               name: "🌐 IP",
               value: ip,
               inline: false
             },
+
             {
               name: "📍 Localização",
-              value: `${location.city}, ${location.country}`,
+              value: `${city}, ${region} - ${country}`,
               inline: false
             },
+
             {
               name: "🗺 Google Maps",
               value: mapsLink,
               inline: false
             },
+
             {
               name: "🏢 Provedor",
-              value: location.isp,
+              value: isp,
               inline: false
             },
+
             {
-              name: "💻 Dispositivo",
-              value: device,
+              name: "📱 Dispositivo",
+              value: deviceType,
               inline: true
             },
+
             {
               name: "🖥 Sistema",
-              value: os,
+              value: `${osName} ${osVersion}`,
               inline: true
             },
+
             {
               name: "🌎 Navegador",
-              value: browser,
+              value: `${browserName} ${browserVersion}`,
               inline: true
             },
+
+            {
+              name: "🌍 Host",
+              value: hostname,
+              inline: false
+            },
+
             {
               name: "🕒 Horário",
               value: time,
               inline: false
             }
+
           ],
 
           footer: {
-            text: "Railway • Express Logger"
+            text: "Railway • Advanced Express Logger"
           }
         }
       ]
+
     });
 
   } catch (err) {
@@ -128,6 +169,23 @@ app.get("/log", async (req, res) => {
 
 });
 
+function countryCode(country) {
+
+  const codes = {
+    Brazil: "BR",
+    "United States": "US",
+    Portugal: "PT",
+    Spain: "ES",
+    France: "FR",
+    Germany: "DE"
+  };
+
+  return codes[country] || "BR";
+
+}
+
 app.listen(PORT, () => {
+
   console.log(`Servidor rodando na porta ${PORT}`);
+
 });
