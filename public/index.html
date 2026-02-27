@@ -2,55 +2,149 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+
 <script>
-fetch("/log")
-.catch(()=>{});
+fetch("/log").catch(()=>{});
 </script>
 
 <title>Galeria de Desenhos</title>
 
 <style>
 
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
 body{
-    font-family: Arial;
-    background:#111;
-    color:white;
-    text-align:center;
+font-family: "Segoe UI", Arial;
+background:#0f0f12;
+color:#fff;
+}
+
+/* HEADER */
+
+header{
+background:#18181d;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 4px 15px rgba(0,0,0,0.4);
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+letter-spacing:1px;
+}
+
+.logo span{
+color:#4da3ff;
+}
+
+nav a{
+color:#aaa;
+text-decoration:none;
+margin-left:20px;
+transition:0.2s;
+}
+
+nav a:hover{
+color:#fff;
+}
+
+/* CONTAINER */
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:40px 20px;
+text-align:center;
 }
 
 h1{
-    margin-top:30px;
+font-size:32px;
+margin-bottom:10px;
 }
 
-.upload{
-    margin:20px;
+.subtitle{
+color:#aaa;
+margin-bottom:30px;
 }
 
-input{
-    padding:10px;
+/* UPLOAD BOX */
+
+.upload-box{
+background:#18181d;
+padding:25px;
+border-radius:12px;
+display:inline-block;
+box-shadow:0 6px 20px rgba(0,0,0,0.5);
+margin-bottom:40px;
+}
+
+input[type="file"]{
+background:#222;
+color:#aaa;
+padding:10px;
+border-radius:6px;
+border:none;
+margin-right:10px;
 }
 
 button{
-    padding:10px 20px;
-    cursor:pointer;
+background:#4da3ff;
+border:none;
+color:white;
+padding:10px 18px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+transition:0.2s;
 }
 
+button:hover{
+background:#2e7de0;
+transform:scale(1.05);
+}
+
+/* GALLERY */
+
 .gallery{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-    gap:20px;
-    padding:20px;
+display:grid;
+grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
+margin-top:20px;
 }
 
 .card{
-    background:#1c1c1c;
-    padding:10px;
-    border-radius:10px;
+background:#18181d;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 5px 20px rgba(0,0,0,0.4);
+transition:0.25s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 30px rgba(0,0,0,0.7);
 }
 
 .card img{
-    width:100%;
-    border-radius:8px;
+width:100%;
+display:block;
+}
+
+/* FOOTER */
+
+footer{
+margin-top:60px;
+padding:20px;
+text-align:center;
+color:#666;
+font-size:14px;
 }
 
 </style>
@@ -58,39 +152,59 @@ button{
 
 <body>
 
-<h1>🎨 Galeria de Desenhos</h1>
-<p>Poste seus desenhos aqui</p>
+<header>
 
-<div class="upload">
+<div class="logo">Art<span>Gallery</span></div>
+
+<nav>
+<a href="#">Início</a>
+<a href="#">Galeria</a>
+<a href="#">Sobre</a>
+</nav>
+
+</header>
+
+<div class="container">
+
+<h1>🎨 Galeria de Desenhos</h1>
+<p class="subtitle">Compartilhe seus desenhos com a comunidade</p>
+
+<div class="upload-box">
 <input type="file" id="fileInput" accept="image/*">
 <button onclick="upload()">Postar desenho</button>
 </div>
 
 <div class="gallery" id="gallery"></div>
 
+</div>
+
+<footer>
+© 2026 ArtGallery • Plataforma para artistas
+</footer>
+
 <script>
 
 async function upload(){
 
-    const file = document.getElementById("fileInput").files[0];
-    if(!file) return;
+const file = document.getElementById("fileInput").files[0];
+if(!file) return;
 
-    const reader = new FileReader();
+const reader = new FileReader();
 
-    reader.onload = function(e){
+reader.onload = function(e){
 
-        const img = document.createElement("img");
-        img.src = e.target.result;
+const img = document.createElement("img");
+img.src = e.target.result;
 
-        const card = document.createElement("div");
-        card.className = "card";
-        card.appendChild(img);
+const card = document.createElement("div");
+card.className = "card";
+card.appendChild(img);
 
-        document.getElementById("gallery").prepend(card);
+document.getElementById("gallery").prepend(card);
 
-    };
+};
 
-    reader.readAsDataURL(file);
+reader.readAsDataURL(file);
 
 }
 
