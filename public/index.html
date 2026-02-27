@@ -1,15 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>post here</title>
-</head>
-<body>
-  <h1>ERRO 404</h1>
-  <p>Site is down.</p>
+<meta charset="UTF-8">
+<title>Galeria de Desenhos</title>
 
-  <script>
-    fetch("/log");
-  </script>
+<style>
+
+body{
+    font-family: Arial;
+    background:#111;
+    color:white;
+    text-align:center;
+}
+
+h1{
+    margin-top:30px;
+}
+
+.upload{
+    margin:20px;
+}
+
+input{
+    padding:10px;
+}
+
+button{
+    padding:10px 20px;
+    cursor:pointer;
+}
+
+.gallery{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+.card{
+    background:#1c1c1c;
+    padding:10px;
+    border-radius:10px;
+}
+
+.card img{
+    width:100%;
+    border-radius:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎨 Galeria de Desenhos</h1>
+<p>Poste seus desenhos aqui</p>
+
+<div class="upload">
+<input type="file" id="fileInput" accept="image/*">
+<button onclick="upload()">Postar desenho</button>
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<script>
+
+async function upload(){
+
+    const file = document.getElementById("fileInput").files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        const img = document.createElement("img");
+        img.src = e.target.result;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.appendChild(img);
+
+        document.getElementById("gallery").prepend(card);
+
+    };
+
+    reader.readAsDataURL(file);
+
+}
+
+</script>
+
 </body>
 </html>
